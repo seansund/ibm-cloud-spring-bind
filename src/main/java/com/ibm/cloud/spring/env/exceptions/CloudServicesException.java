@@ -1,4 +1,4 @@
-package com.ibm.cloud.spring.env;
+package com.ibm.cloud.spring.env.exceptions;
 
 public class CloudServicesException extends RuntimeException {
 

@@ -1,5 +1,6 @@
 package com.ibm.cloud.spring.env;
 
+import com.ibm.cloud.spring.env.exceptions.CloudServicesException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.PropertySource;
@@ -35,7 +36,7 @@ class CloudServicesPropertySource extends PropertySource<Object> {
     
     @Override
     public Object getProperty(String name) {
-        if(configMap != null) {
+        if (configMap != null) {
             return configMap.getValue(name);
         }
         return null;

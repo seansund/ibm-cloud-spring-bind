@@ -17,7 +17,7 @@ import static org.junit.Assert.assertEquals;
  *  CloudServicesConfigMap is completely, though indirectly,
  *  exercised by these tests.
  */
-public class CloudServicesConfigV1Test {
+public class CloudServicesConfigV1andV2Test {
 
     String VCAP_SERVICES = "{\"cloudantNoSQLDB\":[{\"credentials\":{\"username\":\"VCAP_SERVICES-username\",\"password\":\"VCAP_SERVICES-password\",\"host\":\"VCAP_SERVICES.cloudant.com\",\"port\":999,\"url\":\"https://VCAP_SERVICES.cloudant.com\"},\"syslog_drain_url\":null,\"volume_mounts\":[],\"label\":\"cloudantNoSQLDB\",\"provider\":null,\"plan\":\"Lite\",\"name\":\"VCAP_SERVICES-cloudantno-1234567890\",\"tags\":[\"data_management\",\"ibm_created\",\"lite\",\"ibm_dedicated_public\"]}]}";
 
@@ -33,12 +33,63 @@ public class CloudServicesConfigV1Test {
 
     @Before
     public void setUp() {
-        CloudServicesConfigMap.getInstance(Arrays.asList("/mappings.v1.json", "mappings.bogus.json")).setAppContext(appContext);
+        CloudServicesConfigMap.getInstance(Arrays.asList("/mappings.v1.json", "/mappings.v2.json")).setAppContext(appContext);
         initializer.postProcessEnvironment(this.appContext.getEnvironment(), null);
     }
 
     @Test
-    public void getValueCF() {
+    public void getValueCF_v2() {
+        System.setProperty("VCAP_SERVICES", VCAP_SERVICES);
+        String userName = appContext.getEnvironment().getProperty("cloudant.username");
+        System.clearProperty("VCAP_SERVICES");
+        assertEquals("VCAP_SERVICES-username", userName);
+    }
+
+    @Test
+    public void getValueCFUserProvided_v2() {
+        System.setProperty("VCAP_SERVICES", VCAP_SERVICES_USER_PROVIDED);
+        String userName = appContext.getEnvironment().getProperty("cloudant.username");
+        System.clearProperty("VCAP_SERVICES");
+        assertEquals("VCAP_SERVICES-username", userName);
+    }
+
+    @Test
+    public void getValueEnv_v2() {
+        System.setProperty("cloudant_username", "env-username");
+        String userName = appContext.getEnvironment().getProperty("cloudant.username");
+        System.clearProperty("cloudant_username");
+        assertEquals("env-username", userName);
+    }
+
+    @Test
+    public void getValueEnvJSON_v2() {
+        System.setProperty("cloudant_config", CLOUDANT_CONFIG_JSON);
+        String userName = appContext.getEnvironment().getProperty("cloudant.username");
+        System.clearProperty("cloudant_config");
+        assertEquals("env-json-username", userName);
+    }
+
+    @Test
+    public void getValueFile_v2() {
+        String userName = appContext.getEnvironment().getProperty("cloudant.username");
+        assertEquals("file-json-username", userName);
+    }
+
+    @Test
+    public void getValueFileJSON_v2() {
+        String url = appContext.getEnvironment().getProperty("cloudant.url");
+        assertEquals("https://file-url.cloudant.com", url);
+    }
+
+    @Test
+    public void getValueApplicationProperties_v2() {
+        TestPropertySourceUtils.addPropertiesFilesToEnvironment(appContext, "/application.properties");
+        String blah = appContext.getEnvironment().getProperty("blah.blah");
+        assertEquals("The quick brown fox jumps over the lazy dog.", blah);
+    }
+
+    @Test
+    public void getValueCF_v1() {
         System.setProperty("VCAP_SERVICES", VCAP_SERVICES);
         String userName = appContext.getEnvironment().getProperty("cloudant_username");
         System.clearProperty("VCAP_SERVICES");
@@ -46,7 +97,7 @@ public class CloudServicesConfigV1Test {
     }
 
     @Test
-    public void getValueCFUserProvided() {
+    public void getValueCFUserProvided_v1() {
         System.setProperty("VCAP_SERVICES", VCAP_SERVICES_USER_PROVIDED);
         String userName = appContext.getEnvironment().getProperty("cloudant_username");
         System.clearProperty("VCAP_SERVICES");
@@ -54,7 +105,7 @@ public class CloudServicesConfigV1Test {
     }
 
     @Test
-    public void getValueEnv() {
+    public void getValueEnv_v1() {
         System.setProperty("cloudant_username", "env-username");
         String userName = appContext.getEnvironment().getProperty("cloudant_username");
         System.clearProperty("cloudant_username");
@@ -62,7 +113,7 @@ public class CloudServicesConfigV1Test {
     }
 
     @Test
-    public void getValueEnvJSON() {
+    public void getValueEnvJSON_v1() {
         System.setProperty("cloudant_config", CLOUDANT_CONFIG_JSON);
         String userName = appContext.getEnvironment().getProperty("cloudant_username");
         System.clearProperty("cloudant_config");
@@ -70,19 +121,19 @@ public class CloudServicesConfigV1Test {
     }
 
     @Test
-    public void getValueFile() {
+    public void getValueFile_v1() {
         String userName = appContext.getEnvironment().getProperty("cloudant_username");
         assertEquals("file-json-username", userName);
     }
 
     @Test
-    public void getValueFileJSON() {
+    public void getValueFileJSON_v1() {
         String url = appContext.getEnvironment().getProperty("cloudant_url");
         assertEquals("https://file-url.cloudant.com", url);
     }
 
     @Test
-    public void getValueApplicationProperties() {
+    public void getValueApplicationProperties_v1() {
         TestPropertySourceUtils.addPropertiesFilesToEnvironment(appContext, "/application.properties");
         String blah = appContext.getEnvironment().getProperty("blah.blah");
         assertEquals("The quick brown fox jumps over the lazy dog.", blah);
